@@ -4,7 +4,7 @@ import com.rabbitmq.client.*;
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
 
-public class MessageSender {
+public class RabbitMQHelpers {
     private static Channel channel;
     public static Channel getChannel() throws IOException, TimeoutException {
         if (channel == null) {
@@ -18,15 +18,11 @@ public class MessageSender {
     /**
      * send message to queue
      */
-    public static void sendMessage(String message, String queueName) {
+    public static void sendMessage(String message, String exchangeName) {
         try {
             channel = getChannel();
-            channel.queueDeclare(queueName, // queue name
-                                 false,     // durable
-                                 false,     // exclusive
-                                 false,     // auto-delete
-                                 null);     // arguments
-            channel.basicPublish("", queueName, null, message.getBytes());
+            channel.exchangeDeclare(exchangeName, "fanout");
+            channel.basicPublish(exchangeName, "", null, message.getBytes());
             System.out.println(" [x] Sent '" + message + "'");
         } catch (Exception e) {
             e.printStackTrace();
@@ -41,11 +37,6 @@ public class MessageSender {
                 java.util.function.Consumer<String> callback) {
         try {
             channel = getChannel();
-            channel.queueDeclare(queueName, // queue name
-                                 false,     // durable
-                                 false,     // exclusive
-                                 false,     // auto-delete
-                                 null);     // arguments
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
                 String message = new String(delivery.getBody(), "UTF-8");
                 callback.accept(message);
@@ -55,5 +46,22 @@ public class MessageSender {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public static String getExchangeName(int paragraph_idx) {
+        return "exchange_" + paragraph_idx;
+    }
+
+    public static String createQueue(String exchangeName) {
+        try {
+            channel = getChannel();
+            channel.exchangeDeclare(exchangeName, "fanout");
+            String queueName = channel.queueDeclare().getQueue();
+            channel.queueBind(queueName, exchangeName, "");
+            return queueName;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

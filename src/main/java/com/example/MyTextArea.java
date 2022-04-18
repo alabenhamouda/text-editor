@@ -1,18 +1,20 @@
 package com.example;
 import java.awt.Font;
-
 import javax.swing.*;
 
-import com.example.enums.ActiveTextAreaEnum;
-
 public abstract class MyTextArea extends JTextArea {
-    protected QueueNameManager queueNameManager;
-    public MyTextArea(boolean enabled, ActiveTextAreaEnum activeTextArea) {
+    private int idx;
+    private String exchangeName;
+    public MyTextArea(int idx, int activeParagraphIdx) {
         super("write something here...");
-        setEnabled(enabled);
-        this.queueNameManager = new QueueNameManager(activeTextArea);
-		setFont(new Font("Monaco", Font.PLAIN, 20));
-		attachListener();
+        this.idx = idx;
+        this.exchangeName = RabbitMQHelpers.getExchangeName(idx);
+        setEnabled(activeParagraphIdx == idx);
+        setFont(new Font("Monaco", Font.PLAIN, 20));
+        attachListener();
     }
+
+    public String getExchangeName() { return exchangeName; }
+
     protected abstract void attachListener();
 }

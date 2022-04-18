@@ -1,40 +1,34 @@
 package com.example;
-import com.example.enums.*;
+import constants.SharedConstants;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 public class TextEditorFrame extends JFrame {
-    private MyTextArea textArea1;
-    private MyTextArea textArea2;
-    TextEditorFrame(ActiveTextAreaEnum activeTextArea, TextAreaModeEnum mode) {
+    private MyTextArea[] textAreas;
+    TextEditorFrame(int activeParagraphIdx) {
         super("Text Editor");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1000, 600);
 
-        if (mode == TextAreaModeEnum.WRITE) {
-            textArea1 = TextAreaFactory.createTextArea(
-                activeTextArea == ActiveTextAreaEnum.first,
-                ActiveTextAreaEnum.first, TextAreaModeEnum.WRITE);
-            textArea2 = TextAreaFactory.createTextArea(
-                activeTextArea == ActiveTextAreaEnum.second,
-                ActiveTextAreaEnum.second, TextAreaModeEnum.WRITE);
-        } else {
-            textArea1 = TextAreaFactory.createTextArea(
-                false, ActiveTextAreaEnum.first, TextAreaModeEnum.READ);
-            textArea2 = TextAreaFactory.createTextArea(
-                false, ActiveTextAreaEnum.second, TextAreaModeEnum.READ);
+        textAreas = new MyTextArea[SharedConstants.NUMBER_OF_PARAGRAPHS];
+
+        for (int i = 0; i < SharedConstants.NUMBER_OF_PARAGRAPHS; i++) {
+            textAreas[i] =
+                TextAreaFactory.createTextArea(i, activeParagraphIdx);
         }
 
         JPanel panel = new JPanel();
         panel.setBorder(new EmptyBorder(50, 30, 50, 30));
 
-        GridLayout layout = new GridLayout(2, 1);
+        GridLayout layout =
+            new GridLayout(SharedConstants.NUMBER_OF_PARAGRAPHS, 1);
         layout.setVgap(50);
         panel.setLayout(layout);
 
-        panel.add(textArea1);
-        panel.add(textArea2);
+        for (MyTextArea textArea : textAreas) {
+            panel.add(textArea);
+        }
 
         add(panel);
 

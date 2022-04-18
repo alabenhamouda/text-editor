@@ -1,13 +1,11 @@
 package com.example;
 
-import com.example.enums.*;
-
 public class TextAreaFactory {
-	public static MyTextArea createTextArea(boolean enabled, ActiveTextAreaEnum activeTextArea, TextAreaModeEnum mode) {
-		if(mode == TextAreaModeEnum.READ) {
-			return new ReadTextArea(enabled, activeTextArea);
-		} else {
-			return new WriteTextArea(enabled, activeTextArea);
-		}
-	}
+    public static MyTextArea createTextArea(int idx, int activeParagraphIdx) {
+        if (idx != activeParagraphIdx) {
+            return new ReadTextArea(idx, activeParagraphIdx);
+        } else {
+            return new WriteTextArea(idx, activeParagraphIdx);
+        }
+    }
 }

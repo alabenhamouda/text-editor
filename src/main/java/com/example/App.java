@@ -1,33 +1,21 @@
 package com.example;
 
-import com.example.enums.ActiveTextAreaEnum;
-import com.example.enums.TextAreaModeEnum;
+import constants.SharedConstants;
 
 public class App {
     public static void main(String[] args) {
-        ActiveTextAreaEnum activeTextArea;
-		TextAreaModeEnum mode;
-		String usage = "Usage: java App <first|second> <read|write>";
-		if(args.length != 2) {
-			System.out.println(usage);
-			return;
-		}
-        if (args[0].equals("first")) {
-            activeTextArea = ActiveTextAreaEnum.first;
-        } else if (args[0].equals("second")) {
-            activeTextArea = ActiveTextAreaEnum.second;
-        } else {
+        String usage = "Usage: java App <active paragraph index | -1>";
+        if (args.length != 1) {
             System.out.println(usage);
-			throw new RuntimeException("Invalid argument");
+            throw new RuntimeException("Invalid argument");
         }
-		if(args[1].equals("read")) {
-			mode = TextAreaModeEnum.READ;
-		} else if(args[1].equals("write")) {
-			mode = TextAreaModeEnum.WRITE;
-		} else {
-			System.out.println(usage);
-			throw new RuntimeException("Invalid argument");
-		}
-        new TextEditorFrame(activeTextArea, mode);
+        int activeParagraphIdx = Integer.parseInt(args[0]);
+        if (activeParagraphIdx != -1 &&
+            (activeParagraphIdx < 0 ||
+             activeParagraphIdx >= SharedConstants.NUMBER_OF_PARAGRAPHS)) {
+            System.out.println(usage);
+            throw new RuntimeException("Invalid argument");
+        }
+        new TextEditorFrame(activeParagraphIdx);
     }
 }
