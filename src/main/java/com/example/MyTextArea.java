@@ -14,6 +14,7 @@ public class MyTextArea extends JTextArea implements FocusListener {
     private String messagesExchangeName;
     private String enableExchangeName;
     private Reader messagesReader;
+    private Reader enableReader;
     private SendingDocumentListener sendingDocumentListener;
     public MyTextArea(int idx) {
         super("write something here...");
@@ -29,8 +30,10 @@ public class MyTextArea extends JTextArea implements FocusListener {
             new SendingDocumentListener(messagesExchangeName);
 
         messagesReader = new Reader(messagesExchangeName);
+        enableReader = new Reader(enableExchangeName);
 
         startReadingMessages();
+        startReadingEnableSignal();
     }
 
     private void startReadingMessages() {
@@ -50,6 +53,21 @@ public class MyTextArea extends JTextArea implements FocusListener {
 
     private void stopReadingMessages() { messagesReader.stop(); }
 
+    private void startReadingEnableSignal() {
+        Consumer<String> enableConsumer = enable -> {
+            if (enable.equals(SharedConstants.ENABLE)) {
+                setEnabled(true);
+            } else if (enable.equals(SharedConstants.DISABLE)) {
+                setEnabled(false);
+            } else {
+                throw new RuntimeException("Unknown enable signal: " + enable);
+            }
+        };
+        enableReader.start(enableConsumer);
+    }
+
+    private void stopReadingEnableSignal() { enableReader.stop(); }
+
     private void startSendingMessages() {
         getDocument().addDocumentListener(sendingDocumentListener);
     }
@@ -64,6 +82,10 @@ public class MyTextArea extends JTextArea implements FocusListener {
         System.out.println("focusGained " + this.idx);
         stopReadingMessages();
         startSendingMessages();
+
+        stopReadingEnableSignal();
+        RabbitMQHelpers.sendMessage(SharedConstants.DISABLE,
+                                    enableExchangeName);
     }
 
     public void focusLost(FocusEvent e) {
@@ -71,6 +93,9 @@ public class MyTextArea extends JTextArea implements FocusListener {
         // start reading again
         startReadingMessages();
         stopSendingMessages();
+
+        RabbitMQHelpers.sendMessage(SharedConstants.ENABLE, enableExchangeName);
+        startReadingEnableSignal();
     }
 }
 
