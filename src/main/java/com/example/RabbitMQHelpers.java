@@ -61,8 +61,9 @@ public class RabbitMQHelpers {
         }
     }
 
-    public static String getExchangeName(int paragraph_idx) {
-        return "exchange_" + paragraph_idx;
+    public static String getExchangeName(String exchangePrefix,
+                                         int paragraph_idx) {
+        return exchangePrefix + "_" + paragraph_idx;
     }
 
     public static String createQueue(String exchangeName) {

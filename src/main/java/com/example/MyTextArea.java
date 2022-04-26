@@ -1,4 +1,5 @@
 package com.example;
+import constants.SharedConstants;
 import java.awt.Font;
 import java.awt.event.*;
 import java.util.function.Consumer;
@@ -11,22 +12,28 @@ import javax.swing.text.Document;
 public class MyTextArea extends JTextArea implements FocusListener {
     private int idx;
     private String messagesExchangeName;
-    private String readingConsumerTag;
+    private String enableExchangeName;
+    private Reader messagesReader;
     private SendingDocumentListener sendingDocumentListener;
     public MyTextArea(int idx) {
         super("write something here...");
         this.idx = idx;
-        this.messagesExchangeName = RabbitMQHelpers.getExchangeName(idx);
+        this.messagesExchangeName = RabbitMQHelpers.getExchangeName(
+            SharedConstants.MESSAGES_EXCHANGE_PREFIX, idx);
+        this.enableExchangeName = RabbitMQHelpers.getExchangeName(
+            SharedConstants.ENABLE_EXCHANGE_PREFIX, idx);
         setFont(new Font("Monaco", Font.PLAIN, 20));
         addFocusListener(this);
 
         sendingDocumentListener =
             new SendingDocumentListener(messagesExchangeName);
 
-        readingConsumerTag = startReadingMessages();
+        messagesReader = new Reader(messagesExchangeName);
+
+        startReadingMessages();
     }
 
-    private String startReadingMessages() {
+    private void startReadingMessages() {
         Consumer<String> messageConsumer = message -> {
             try {
                 // remove content from document
@@ -38,13 +45,10 @@ public class MyTextArea extends JTextArea implements FocusListener {
                 e.printStackTrace();
             }
         };
-        return RabbitMQHelpers.readMessage(
-            RabbitMQHelpers.createQueue(messagesExchangeName), messageConsumer);
+        messagesReader.start(messageConsumer);
     }
 
-    private void stopReadingMessages() {
-        RabbitMQHelpers.cancelReading(readingConsumerTag);
-    }
+    private void stopReadingMessages() { messagesReader.stop(); }
 
     private void startSendingMessages() {
         getDocument().addDocumentListener(sendingDocumentListener);
@@ -65,7 +69,7 @@ public class MyTextArea extends JTextArea implements FocusListener {
     public void focusLost(FocusEvent e) {
         System.out.println("focusLost " + this.idx);
         // start reading again
-        readingConsumerTag = startReadingMessages();
+        startReadingMessages();
         stopSendingMessages();
     }
 }
