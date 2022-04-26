@@ -32,7 +32,7 @@ public class RabbitMQHelpers {
     /**
      * read message from queue queueName and feed to callback
      */
-    public static void
+    public static String
     readMessage(String queueName,
                 java.util.function.Consumer<String> callback) {
         try {
@@ -41,9 +41,22 @@ public class RabbitMQHelpers {
                 String message = new String(delivery.getBody(), "UTF-8");
                 callback.accept(message);
             };
-            channel.basicConsume(queueName, true, deliverCallback,
-                                 consumerTag -> {});
+            return channel.basicConsume(queueName, true, deliverCallback,
+                                        consumerTag -> {});
         } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    /**
+     * cancel reading from queue
+     */
+    public static void cancelReading(String consumerTag) {
+        try {
+            channel = getChannel();
+            channel.basicCancel(consumerTag);
+        } catch (IOException | TimeoutException e) {
             e.printStackTrace();
         }
     }

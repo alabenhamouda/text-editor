@@ -14,8 +14,7 @@ public class TextEditorFrame extends JFrame {
         textAreas = new MyTextArea[SharedConstants.NUMBER_OF_PARAGRAPHS];
 
         for (int i = 0; i < SharedConstants.NUMBER_OF_PARAGRAPHS; i++) {
-            textAreas[i] =
-                TextAreaFactory.createTextArea(i, activeParagraphIdx);
+            textAreas[i] = new MyTextArea(i);
         }
 
         JPanel panel = new JPanel();

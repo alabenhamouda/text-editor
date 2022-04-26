@@ -1,5 +1,5 @@
 package constants;
 
 public class SharedConstants {
-    public static final int NUMBER_OF_PARAGRAPHS = 3;
+    public static final int NUMBER_OF_PARAGRAPHS = 4;
 }
